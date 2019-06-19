@@ -7,11 +7,11 @@
 
 
 int parseArguments(int arg_count, const char*** arg_vector);
-int printHelp();
-int exportDevice(char name[], char ip[]);
-char* importDevice(char name[]);
+int printHelp();                            // N/C
+int exportDevice(char name[], char ip[]);   // N/I
+char* importDevice(char name[]);            // N/I
 char* findByMac(char mac[]);
-char* deviceList();
+char* readFile(char file_name[]);
 long fileSize(FILE* file);
 
 
@@ -39,7 +39,7 @@ int main(int argc, const char* argv[])
     char ip[15] = "";
 	
 	if (settings::by_ip) strcpy(ip, settings::ip);
-	//else if (settings::by_mac) strcpy(ip, findByMac(settings::mac));
+	else if (settings::by_mac) strcpy(ip, findByMac(settings::mac));
 	//else if (settings::by_name) strcpy(ip, importDevice(settings::name));
 	else
 	{
@@ -48,7 +48,7 @@ int main(int argc, const char* argv[])
 	}
 	    
     
-    printf("ip: %s\n", ip);
+    printf("ip: \"%s\"\n", ip);
 	
 	//current_gear.createConnection();
 		
@@ -99,10 +99,54 @@ int parseArguments(int arg_count, const char*** arg_vector)
 #undef arg
 
 
+char* findByMac(char mac[])
+{
+    char command[33] = "./findmac.sh ";
+    strcat(command, mac);
+    system(command);
+
+    char* result = readFile("finded.conf");
+    int length = strlen(result);
+    
+    if(length == 0)
+        return "n/f";
+    
+    char* ip = (char*) calloc (sizeof(char), 15);
+    int ind = 0;    
+    bool writing = 0;
+    
+    for(int counter = 0; counter < length; counter++)
+    {
+        if (result[counter] == '(')
+            writing = 1;
+        else if (result[counter] == ')')
+            writing = 0;
+        else if (writing)
+        {
+            ip[ind] = result[counter];
+            ind++;
+        }
+    }
+    
+    return ip;
+}
+
 int printHelp()
 {
 	printf("Help page\n");
 	return 0;
+}
+
+
+char* readFile(char file_name[])
+{
+    FILE* file = fopen(file_name, "r");
+    long file_length = fileSize(file);
+
+    char* text = (char*) calloc (sizeof (char), file_length + 1);
+    fread (text, sizeof (char), file_length, file);
+    
+    return text;
 }
 
 
