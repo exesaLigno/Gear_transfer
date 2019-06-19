@@ -9,7 +9,7 @@
 int parseArguments(int arg_count, const char*** arg_vector);
 int printHelp();                            // N/C
 int exportDevice(char name[], char ip[]);   // N/I
-char* importDevice(char name[]);            // N/I
+char* importDevice(char name[]);
 char* findByMac(char mac[]);
 char* readFile(char file_name[]);
 long fileSize(FILE* file);
@@ -46,6 +46,9 @@ int main(int argc, const char* argv[])
 	    printf("Arguments Error. Type \"transfer --help\" to see help\n");
 	    return 0;
 	}
+	
+	if(settings::save and not settings::by_name and strcmp(ip, ""))
+	    exportDevice(settings::name, ip);
 	    
     
     printf("ip: \"%s\"\n", ip);
@@ -179,6 +182,15 @@ char* importDevice(char required_name[])
     }
     
     return ip;
+}
+
+
+int exportDevice(char name[], char ip[])
+{
+    FILE* database = fopen("devices.conf", "a+");
+    fprintf(database, "%s %s\n", name, ip);
+    fclose(database);
+    return 0;
 }
 
 
