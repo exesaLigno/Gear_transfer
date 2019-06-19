@@ -40,7 +40,7 @@ int main(int argc, const char* argv[])
 	
 	if (settings::by_ip) strcpy(ip, settings::ip);
 	else if (settings::by_mac) strcpy(ip, findByMac(settings::mac));
-	//else if (settings::by_name) strcpy(ip, importDevice(settings::name));
+	else if (settings::by_name) strcpy(ip, importDevice(settings::name));
 	else
 	{
 	    printf("Arguments Error. Type \"transfer --help\" to see help\n");
@@ -109,7 +109,7 @@ char* findByMac(char mac[])
     int length = strlen(result);
     
     if(length == 0)
-        return "n/f";
+        return "";
     
     char* ip = (char*) calloc (sizeof(char), 15);
     int ind = 0;    
@@ -131,6 +131,57 @@ char* findByMac(char mac[])
     return ip;
 }
 
+
+char* importDevice(char required_name[])
+{
+    char* list = readFile("devices.conf");
+    int length = strlen(list);
+    bool name_flag = 1;
+    bool ip_flag = 0;
+    bool founded = 0;
+    char current_name[20] = "";
+    char current_ip[20] = "";
+    int ind = 0;
+    
+    char* ip = (char*) calloc (sizeof(char), 15);
+    
+    for(int counter = 0; counter < length; counter++)
+    {
+        if(list[counter] == ' ')
+        {
+            name_flag = 0;
+            ip_flag = 1;
+            ind = 0;
+        }
+        else if(list[counter] == '\n')
+        {
+            if(!strcmp(current_name, required_name))
+                strcpy(ip, current_ip);
+            name_flag = 1;
+            ip_flag = 0;
+            for(ind = 0; ind < 20; ind++)
+            {
+                current_name[ind] = 0;
+                current_ip[ind] = 0;
+            }
+            ind = 0;
+        }
+        else if(name_flag)
+        {
+            current_name[ind] = list[counter];
+            ind++;
+        }
+        else if(ip_flag)
+        {
+            current_ip[ind] = list[counter];
+            ind++;
+        }
+    }
+    
+    return ip;
+}
+
+
 int printHelp()
 {
 	printf("Help page\n");
@@ -141,11 +192,14 @@ int printHelp()
 char* readFile(char file_name[])
 {
     FILE* file = fopen(file_name, "r");
-    long file_length = fileSize(file);
-
-    char* text = (char*) calloc (sizeof (char), file_length + 1);
-    fread (text, sizeof (char), file_length, file);
-    
+    char* text = "";
+    if (file)
+    {
+        long file_length = fileSize(file);
+        text = (char*) calloc (sizeof (char), file_length + 1);
+        fread (text, sizeof (char), file_length, file);
+        fclose(file);
+    }
     return text;
 }
 
