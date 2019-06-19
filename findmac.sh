@@ -10,6 +10,6 @@ if ! [[ -f `which arp` ]]; then
     sudo apt-get -y install net-tools
 fi
 
-echo "scanning net"
+echo "Scanning network"
 nmap -sP 192.168.1.1-254 >> /dev/null
 arp -a | grep $1 > finded.conf   # $1 - searching mac
