@@ -8,7 +8,11 @@
 
 int parseArguments(int arg_count, const char*** arg_vector);
 int printHelp();
-long file_size (FILE* file);
+int exportDevice(char name[], char ip[]);
+char* importDevice(char name[]);
+char* findByMac(char mac[]);
+char* deviceList();
+long fileSize(FILE* file);
 
 
 namespace settings
@@ -31,11 +35,22 @@ int main(int argc, const char* argv[])
 		parseArguments(argc, &argv);
 	else
 		printHelp();
+		
+    char ip[15] = "";
 	
-	if (settings::by_ip)
-	    current_gear = Gear(settings
+	if (settings::by_ip) strcpy(ip, settings::ip);
+	//else if (settings::by_mac) strcpy(ip, findByMac(settings::mac));
+	//else if (settings::by_name) strcpy(ip, importDevice(settings::name));
+	else
+	{
+	    printf("Arguments Error. Type \"transfer --help\" to see help\n");
+	    return 0;
+	}
+	    
+    
+    printf("ip: %s\n", ip);
 	
-	current_gear.createConnection();
+	//current_gear.createConnection();
 		
 	
 	//Gear s3("s3", "192.168.1.143", "26101", "00:00:00:00:00:00");
@@ -87,12 +102,11 @@ int parseArguments(int arg_count, const char*** arg_vector)
 int printHelp()
 {
 	printf("Help page\n");
-	settings::pass = 1;
 	return 0;
 }
 
 
-long file_size (FILE* file)
+long fileSize (FILE* file)
 {
     fseek (file, 0, SEEK_END);
     long file_size = ftell (file);

@@ -14,6 +14,7 @@ private:
 public:
 	Gear(char adress[]);
 	int createConnection();
+	int refuseConnection();
 	int fileTransferToGear(char initial_file_path[], char target_file_path[]); // Not implemented
 	int fileTransferFromGear(char initial_file_path[], char target_file_path[]); // Not implemented
 	~Gear();
@@ -24,7 +25,7 @@ public:
 Gear::Gear(char adress[])
 {
     strcpy(deviceAdress, adress);
-    strcat(deviceAdress, ':');
+    strcat(deviceAdress, ":");
 	strcat(deviceAdress, "26101");
 }
 
