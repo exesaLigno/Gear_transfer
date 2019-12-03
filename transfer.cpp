@@ -1,3 +1,4 @@
+#include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <unistd.h>
@@ -43,7 +44,7 @@ int main(int argc, const char* argv[])
 	else if (settings::by_name) strcpy(ip, importDevice(settings::name));
 	else
 	{
-	    printf("Arguments Error. Type \"transfer --help\" to see help\n");
+	    std::cout << "Arguments Error. Type \"transfer --help\" to see help" << std::endl;
 	    return 0;
 	}
 	
@@ -67,35 +68,14 @@ int parseArguments(int arg_count, const char*** arg_vector)
 {
 	for(int counter = 1; counter < arg_count; counter++)
 	{		
-		if(!strcmp(arg, "--name") or !strcmp(arg, "-n"))
-		{
-			strcpy(settings::name, (*arg_vector)[++counter]);
-			settings::by_name = 1;
-	    }
+		if (!strcmp(arg, "--find") or !strcmp(arg, "-f"))
+			std::cout << "finding device" << std::endl;
 		
-		else if(!strcmp(arg, "--set-name") or !strcmp(arg, "-sn"))
-		{
-			strcpy(settings::name, (*arg_vector)[++counter]);
-			settings::save = 1;
-		}
-		
-		else if(!strcmp(arg, "--mac") or !strcmp(arg, "-m"))
-		{
-			strcpy(settings::mac, (*arg_vector)[++counter]);
-			settings::by_mac = 1;
-		}
-		
-		else if(!strcmp(arg, "--ip") or !strcmp(arg, "-i"))
-		{
-			strcpy(settings::ip, (*arg_vector)[++counter]);
-			settings::by_ip = 1;
-		}
-		
-		else if(!strcmp(arg, "--help") or !strcmp(arg, "-h"))
+		else if (!strcmp(arg, "--help") or !strcmp(arg, "-h") or !strcmp(arg, "--usage"))
 			printHelp();
 		
 		else
-			printf("undefined parameter: %s\n", arg);
+			std::cout << "undefined parameter: " << arg << std::endl;
 	}
 	return 0;
 }
