@@ -2,30 +2,55 @@
 #include <fstream>
 #include <cstdlib>
 #include <unistd.h>
+#include <string>
+#include <map>
 #include <cstring>
 #include <assert.h>
 #include "gear.hpp"
 
 
-int parseArguments(int arg_count, const char*** arg_vector);
+#define DEBUG_MODE
+
+#ifdef DEBUG_MODE
+	#define DEBUG if(1)
+#else
+	#define DEBUG if(0)
+#endif
+
+
+RET_CODE parseArguments(int arg_count, const char*** arg_vector);
 int printHelp();                            // N/C
-int exportDevice(char name[], char ip[]);   // N/I
-char* importDevice(char name[]);
-char* findByMac(char mac[]);
-char* readFile(char file_name[]);
+int exportDevice(const char name[], const char ip[]);   // N/I
+char* importDevice(const char name[]);
+char* findByMac(const char mac[]);
+char* readFile(const char file_name[]);
 long fileSize(FILE* file);
 
 
+enum class RET_CODE : unsigned short int
+{
+	SUCCESS,
+	INVALID_INPUT,
+	COUNT_OF_ERRORS
+};
+
+
+enum class MODE : unsigned short int
+{
+	SEARCH,
+	TRANSFER_TO_GEAR,
+	TRANSFER_FROM_GEAR,
+	COUNT_OF_MODES
+};
+
 namespace settings
 {
-    char name[20] = "";
-    char mac[17] = "";
-    char ip[15] = "";
-    bool by_name = 0;
-    bool by_mac = 0;
-    bool by_ip = 0;
-    bool save = 0;
-}
+	MODE mode = NULL;
+	char* mac;
+	char** initial_files;
+	char* initial_path;
+	char* target_path;
+};
 
 
 
@@ -36,48 +61,43 @@ int main(int argc, const char* argv[])
 		parseArguments(argc, &argv);
 	else
 		printHelp();
-		
-    char ip[15] = "";
-	
-	if (settings::by_ip) strcpy(ip, settings::ip);
-	else if (settings::by_mac) strcpy(ip, findByMac(settings::mac));
-	else if (settings::by_name) strcpy(ip, importDevice(settings::name));
-	else
-	{
-	    std::cout << "Arguments Error. Type \"transfer --help\" to see help" << std::endl;
-	    return 0;
-	}
-	
-	if(settings::save and not settings::by_name and strcmp(ip, ""))
-	    exportDevice(settings::name, ip);
-	    
-    
-    printf("ip: \"%s\"\n", ip);
-	
-	//current_gear.createConnection();
-		
-	
-	//Gear s3("s3", "192.168.1.143", "26101", "00:00:00:00:00:00");
 	
 	return 0;
 }
 
 
 #define arg (*arg_vector)[counter]
-int parseArguments(int arg_count, const char*** arg_vector)
+RET_CODE parseArguments(int arg_count, const char*** arg_vector)
 {
 	for(int counter = 1; counter < arg_count; counter++)
-	{		
+	{
+		if (counter >= arg_count)
+			return RET_CODE::INVALID_INPUT;
+
 		if (!strcmp(arg, "--find") or !strcmp(arg, "-f"))
+		{
 			std::cout << "finding device" << std::endl;
+			settings::mode = MODE::SEARCH;
+			counter++;
+			printf("%d\n", arg);
+		}
+			
+		else if (!strcmp(arg, "--get") or !strcmp(arg, "-g"))
+			std::cout << "getting files from gear" << std::endl;
+			
+		else if (!strcmp(arg, "--initial-path") or !strcmp(arg, "--i"))
+			std::cout << "given initial path" << std::endl;
+			
+		else if (!strcmp(arg, "--target-path") or !strcmp(arg, "--t"))
+			std::cout << "given target path" << std::endl;
 		
 		else if (!strcmp(arg, "--help") or !strcmp(arg, "-h") or !strcmp(arg, "--usage"))
 			printHelp();
 		
 		else
-			std::cout << "undefined parameter: " << arg << std::endl;
+			std::cout << "че дурак блять а " << arg << std::endl;
 	}
-	return 0;
+	return RET_CODE::SUCCESS;
 }
 #undef arg
 
@@ -181,7 +201,7 @@ int printHelp()
 }
 
 
-char* readFile(char file_name[])
+char* readFile(const char file_name[])
 {
     FILE* file = fopen(file_name, "r");
     char* text = "";

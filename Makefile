@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall -std=gnu++2a
 LDFLAGS=
 SOURCES=transfer.cpp gear.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
@@ -18,7 +18,7 @@ $(EXECUTABLE): $(OBJECTS)
 	
 .PHONY: clean
 clean:
-	rm -rf *.o "$(EXECUTABLE)"
+	rm -rf *.o "$(EXECUTABLE)" *~
 	
 .PHONY: run
 run:
